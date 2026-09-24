@@ -29,14 +29,14 @@ export const handler = async (event, context) => {
     const age = data.age !== undefined && data.age !== null ? String(data.age) : '';
 
     const resendApiKey = process.env.RESEND_API_KEY;
-    const contactEmail = process.env.CONTACT_EMAIL || 'aashaypariskar1605@gmail.com';
+    const contactEmail = process.env.CONTACT_EMAIL;
 
     const emailContent = `New form submission:\n\nName: ${name}\nMobile Number: ${mobile}\nAge: ${age}`;
 
     console.log('Received submission:', { name, mobile, age });
 
-    // If Resend API key is configured, send the actual email via Resend API
-    if (resendApiKey) {
+    // If Resend API key and contact email are configured, send email via Resend API
+    if (resendApiKey && contactEmail) {
       const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -61,7 +61,12 @@ export const handler = async (event, context) => {
         };
       }
     } else {
-      console.warn('RESEND_API_KEY is not set. Logged submission locally.');
+      if (!resendApiKey) {
+        console.warn('RESEND_API_KEY environment variable is not set.');
+      }
+      if (!contactEmail) {
+        console.warn('CONTACT_EMAIL environment variable is not set.');
+      }
     }
 
     return {
