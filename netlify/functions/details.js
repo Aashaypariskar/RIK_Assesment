@@ -29,45 +29,50 @@ export const handler = async (event, context) => {
     const age = data.age !== undefined && data.age !== null ? String(data.age) : '';
 
     const resendApiKey = process.env.RESEND_API_KEY;
-    const contactEmail = process.env.CONTACT_EMAIL;
+    const contactEmail = process.env.CONTACT_EMAIL || 'aashaypariskar1605@gmail.com';
+
+    if (!resendApiKey) {
+      console.error('Missing RESEND_API_KEY environment variable.');
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Missing RESEND_API_KEY configuration in Netlify.' })
+      };
+    }
 
     const emailContent = `New form submission:\n\nName: ${name}\nMobile Number: ${mobile}\nAge: ${age}`;
 
-    console.log('Received submission:', { name, mobile, age });
+    console.log('Sending email to:', contactEmail);
 
-    // If Resend API key and contact email are configured, send email via Resend API
-    if (resendApiKey && contactEmail) {
-      const resendResponse = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json'
-        },
+    // Call Resend API to dispatch email
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'Form Details <onboarding@resend.dev>',
+        to: [contactEmail],
+        subject: 'New Details Submission',
+        text: emailContent
+      })
+    });
+
+    const resendData = await resendResponse.json();
+
+    if (!resendResponse.ok) {
+      console.error('Resend API returned error:', resendData);
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: 'Form Details <onboarding@resend.dev>',
-          to: [contactEmail],
-          subject: 'New Details Submission',
-          text: emailContent
+          error: resendData.message || 'Failed to send email via Resend API.'
         })
-      });
-
-      const resendData = await resendResponse.json();
-
-      if (!resendResponse.ok) {
-        console.error('Resend API error:', resendData);
-        return {
-          statusCode: 500,
-          body: JSON.stringify({ error: 'Failed to send email via Resend API' })
-        };
-      }
-    } else {
-      if (!resendApiKey) {
-        console.warn('RESEND_API_KEY environment variable is not set.');
-      }
-      if (!contactEmail) {
-        console.warn('CONTACT_EMAIL environment variable is not set.');
-      }
+      };
     }
+
+    console.log('Email sent successfully via Resend:', resendData);
 
     return {
       statusCode: 200,
