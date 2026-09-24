@@ -1,5 +1,5 @@
-exports.handler = async (event, context) => {
-  // Only allow POST requests
+export const handler = async (event, context) => {
+  // Handle preflight OPTIONS request
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -12,6 +12,7 @@ exports.handler = async (event, context) => {
     };
   }
 
+  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
