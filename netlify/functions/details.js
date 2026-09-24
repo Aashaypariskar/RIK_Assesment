@@ -28,32 +28,39 @@ export const handler = async (event, context) => {
     const mobile = data.mobile !== undefined && data.mobile !== null ? String(data.mobile) : '';
     const age = data.age !== undefined && data.age !== null ? String(data.age) : '';
 
-    const resendApiKey = process.env.RESEND_API_KEY;
-    const contactEmail = process.env.CONTACT_EMAIL || 'aashaypariskar1605@gmail.com';
+    const apiKey = process.env.RESEND_API_KEY;
+    const recipient = process.env.CONTACT_EMAIL;
 
-    if (!resendApiKey) {
+    if (!apiKey) {
       console.error('Missing RESEND_API_KEY environment variable.');
       return {
         statusCode: 500,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Missing RESEND_API_KEY configuration in Netlify.' })
+        body: JSON.stringify({ error: 'Server configuration error: RESEND_API_KEY missing.' })
+      };
+    }
+
+    if (!recipient) {
+      console.error('Missing CONTACT_EMAIL environment variable.');
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Server configuration error: CONTACT_EMAIL missing.' })
       };
     }
 
     const emailContent = `New form submission:\n\nName: ${name}\nMobile Number: ${mobile}\nAge: ${age}`;
 
-    console.log('Sending email to:', contactEmail);
-
     // Call Resend API to dispatch email
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         from: 'Form Details <onboarding@resend.dev>',
-        to: [contactEmail],
+        to: [recipient],
         subject: 'New Details Submission',
         text: emailContent
       })
@@ -71,8 +78,6 @@ export const handler = async (event, context) => {
         })
       };
     }
-
-    console.log('Email sent successfully via Resend:', resendData);
 
     return {
       statusCode: 200,
