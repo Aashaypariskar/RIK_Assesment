@@ -2,7 +2,6 @@
   --bg: #f8fafc;
   --card-bg: #ffffff;
   --text: #0f172a;
-  --text-muted: #64748b;
   --border: #cbd5e1;
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
@@ -23,8 +22,6 @@ body {
   background-color: var(--bg);
   color: var(--text);
   line-height: 1.5;
-  padding: 0;
-  margin: 0;
 }
 
 .page-container {
@@ -37,7 +34,8 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-h1, h2 {
+h1,
+h2 {
   font-size: 1.5rem;
   margin-bottom: 20px;
   color: var(--text);
@@ -55,9 +53,7 @@ label {
   color: var(--text);
 }
 
-input[type="text"],
-input[type="tel"],
-input[type="number"] {
+input[type='text'] {
   width: 100%;
   padding: 10px 12px;
   font-size: 1rem;
